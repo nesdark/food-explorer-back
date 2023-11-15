@@ -20,16 +20,13 @@ class ProductsControllers {
 
     await knex('ingredients').insert(ingredientsInsert);
 
-    const categoryInsert = category.map((category) => {
-      return {
-        product_id,
-        name: category,
-      };
-    });
+    const name = category;
 
-    await knex('category').insert(categoryInsert);
+    console.log(name);
 
-    return response.json();
+    await knex('category').insert({ product_id, name });
+
+    return response.json({ id: product_id });
   }
   async delete(request, response) {
     const { id } = request.params;
@@ -66,21 +63,6 @@ class ProductsControllers {
           return product;
         }
       });
-
-      // console.log(
-      //   tableProducts.map((product) => {
-      //     let actualProductIsFromActualCategory;
-      //     tableCategory.forEach((category) => {
-      //       if (product.id == category.product_id) {
-      //         actualProductIsFromActualCategory = true;
-      //       }
-      //     });
-      //     console.log(actualProductIsFromActualCategory);
-      //     if (actualProductIsFromActualCategory) {
-      //       return product;
-      //     }
-      //   })
-      // );
 
       products = await knex('category')
         .select(['products.id', 'products.title'])

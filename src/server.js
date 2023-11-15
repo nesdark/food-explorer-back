@@ -5,11 +5,14 @@ const express = require('express');
 const AppError = require('./utils/AppError');
 const routes = require('./routes');
 const cors = require('cors');
+const uploadConfig = require('./configs/upload');
 
 // Initialize express
 const app = express();
 app.use(cors());
 app.use(express.json()); // Says to the server that the body is JSON
+
+app.use('/files', express.static(uploadConfig.UPLOADS_FOLDER));
 
 app.use(routes);
 
