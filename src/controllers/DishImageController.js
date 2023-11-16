@@ -5,8 +5,8 @@ const DiskStorage = require('../providers/DiskStorage');
 class DishImageController {
   async update(request, response) {
     const productId = request.params.id;
-    const dishImageFileName = request.file.filename;
 
+    const dishImageFileName = request.file.filename;
     const diskStorage = new DiskStorage();
 
     const product = await knex('products').where({ id: productId }).first();

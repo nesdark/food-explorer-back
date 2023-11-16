@@ -48,12 +48,14 @@ class ProductsControllers {
   }
 
   async index(request, response) {
-    const { title, ingredients, category } = request.query;
+    const { search, category } = request.query;
     let products;
 
+    const ingredients = await knex('ingredients').where({ name: search });
+
     const tableProducts = await knex('products');
-    const tableCategory = await knex('category').where({ name: category });
     if (category) {
+      const tableCategory = await knex('category').where({ name: category });
       products = tableProducts.map((product) => {
         if (
           tableCategory.map((category) => {
@@ -69,34 +71,42 @@ class ProductsControllers {
         .whereIn('name', category)
         .innerJoin('products', 'products.id', 'category.product_id')
         .orderBy('products.title');
-    } else if (ingredients) {
-      const filterIngredients = ingredients.split(',').map((tag) => tag.trim());
+    } else if (ingredients.length != 0) {
+      const filterIngredients = search.split(',').map((tag) => tag.trim());
       // Transforme em array a partir de ,
 
       products = await knex('ingredients')
-        .select(['products.id', 'products.title'])
+        .select([
+          'products.id',
+          'products.title',
+          'products.price',
+          'products.image',
+          'products.description',
+          'products.category',
+        ])
         .whereLike('products.title', `%${title}%`)
         .whereIn('name', filterIngredients)
-        .innerJoin('products', 'products.id', 'ingredients.product_id')
+        .innerJoin('products', 'products.id', 'ingredients.dish_id')
+        .groupBy('products.id')
         .orderBy('products.title');
       console.log(products);
     } else {
       products = await knex('products')
-        .whereLike('products.title', `%${title}%`) // Tanto antes quanto depois, se houver title %%
+        .whereLike('products.title', `%${search}%`) // Tanto antes quanto depois, se houver title %%
         .orderBy('products.title');
     }
 
     const tableIngredients = await knex('ingredients');
-    const productsWithTags = products.map((product) => {
-      const productTags = tableIngredients.filter(
+    const productsWithIngredients = products.map((product) => {
+      const productIngredients = tableIngredients.filter(
         (ingredient) => ingredient.product_id == product.id
       );
       return {
         ...product,
-        ingredients: productTags,
+        ingredients: productIngredients,
       };
     });
-    return response.json(productsWithTags);
+    return response.json(productsWithIngredients);
   }
 }
 
