@@ -47,6 +47,26 @@ Food Explorer oferece duas personas: Admin e Usuário.
 - Clique no nome do prato para detalhes específicos.
 - Experiência intuitiva e informativa.
 
+<h3 style="color: #FF1B1C">Atenção
+</h3>
+
+O projeto pode apresentar problemas no banner na visualização pelo Netlify
+
+## 💻 Instalação
+
+Para iniciar o projeto na sua máquina você deverá executar:
+
+```bash
+ $ npm install
+ $ npm run dev
+```
+
+Caso você não tenha o arquivo de `database` execute
+
+```bash
+ $ npm run migrate
+```
+
 ## 🔖 Layout
 
 Você pode visualizar o layout do projeto através [DESSE LINK](<https://www.figma.com/file/C03SkcGvmm94VxYOxbXbsx/food-explorer-v2-(Community)?type=design&node-id=201-1532&mode=design&t=FIbwMVHSZLJYQ4gk-0>). É necessário ter conta no [Figma](https://figma.com) para acessá-lo. <br>
