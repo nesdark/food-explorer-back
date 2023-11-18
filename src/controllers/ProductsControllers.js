@@ -9,6 +9,7 @@ class ProductsControllers {
       description,
       price,
       image,
+      category,
     });
 
     const ingredientsInsert = ingredients.map((ingredient) => {
@@ -20,18 +21,43 @@ class ProductsControllers {
 
     await knex('ingredients').insert(ingredientsInsert);
 
-    const name = category;
-
-    console.log(name);
-
-    await knex('category').insert({ product_id, name });
-
     return response.json({ id: product_id });
   }
   async delete(request, response) {
     const { id } = request.params;
-    await knex('ingredients').where({ id }).delete();
     await knex('products').where({ id }).delete();
+    return response.json();
+  }
+
+  async update(request, response) {
+    const { title, description, price, ingredients, category } = request.body;
+    const { id } = request.params;
+
+    const dish = await knex('products').where({ id });
+
+    if (!dish) {
+      throw new AppError('Prato não encontrado!');
+    }
+
+    dish.title = title ?? dish.title;
+    dish.description = description ?? dish.description;
+    dish.price = price ?? dish.price;
+    dish.category = category ?? dish.category;
+
+    await knex('products')
+      .where({ id })
+      .update({ title, description, price, category });
+
+    const ingredientsInsert = ingredients.map((ingredient) => {
+      return {
+        product_id: id,
+        name: ingredient,
+      };
+    });
+
+    await knex('ingredients').where({ product_id: id }).delete();
+    await knex('ingredients').insert(ingredientsInsert);
+
     return response.json();
   }
 
@@ -41,40 +67,22 @@ class ProductsControllers {
     const ingredients = await knex('ingredients')
       .where({ product_id: id })
       .orderBy('name');
-    const category = await knex('category')
-      .where({ product_id: id })
-      .orderBy('name');
-    return response.json({ ...product, ingredients, category });
+    return response.json({ ...product, ingredients });
   }
 
   async index(request, response) {
-    const { search, category } = request.query;
+    const { search, returnAll } = request.query;
     let products;
 
-    const ingredients = await knex('ingredients').where({ name: search });
+    const ingredients = await knex('ingredients').whereLike(
+      'name',
+      `%${search}%`
+    );
 
     const tableProducts = await knex('products');
-    if (category) {
-      const tableCategory = await knex('category').where({ name: category });
-      products = tableProducts.map((product) => {
-        if (
-          tableCategory.map((category) => {
-            return product.id == category.product_id;
-          })
-        ) {
-          return product;
-        }
-      });
-
-      products = await knex('category')
-        .select(['products.id', 'products.title'])
-        .whereIn('name', category)
-        .innerJoin('products', 'products.id', 'category.product_id')
-        .orderBy('products.title');
+    if (returnAll) {
+      products = await knex('products').orderBy('category');
     } else if (ingredients.length != 0) {
-      const filterIngredients = search.split(',').map((tag) => tag.trim());
-      // Transforme em array a partir de ,
-
       products = await knex('ingredients')
         .select([
           'products.id',
@@ -84,12 +92,10 @@ class ProductsControllers {
           'products.description',
           'products.category',
         ])
-        .whereLike('products.title', `%${title}%`)
-        .whereIn('name', filterIngredients)
-        .innerJoin('products', 'products.id', 'ingredients.dish_id')
+        .whereLike('name', `%${search}%`)
+        .innerJoin('products', 'products.id', 'ingredients.product_id')
         .groupBy('products.id')
         .orderBy('products.title');
-      console.log(products);
     } else {
       products = await knex('products')
         .whereLike('products.title', `%${search}%`) // Tanto antes quanto depois, se houver title %%

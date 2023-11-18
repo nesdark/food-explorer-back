@@ -23,6 +23,7 @@ productsRoutes.use(ensureAuthenticated);
 productsRoutes.use(verifyUserAuthorization('admin'));
 
 productsRoutes.post('/create', productsControllers.create);
+productsRoutes.put('/update/:id', productsControllers.update);
 
 productsRoutes.patch(
   '/image/:id',

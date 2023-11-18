@@ -5,6 +5,7 @@ exports.up = (knex) =>
     table.text('description').notNullable();
     table.decimal('price').notNullable();
     table.text('image').notNullable();
+    table.text('category').notNullable();
   });
 
 exports.down = (knex) => knex.schema.dropTable('products');
