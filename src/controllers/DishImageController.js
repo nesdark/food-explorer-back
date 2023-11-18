@@ -6,7 +6,13 @@ class DishImageController {
   async update(request, response) {
     const productId = request.params.id;
 
-    const dishImageFileName = request.file.filename;
+    let dishImageFileName;
+    try {
+      dishImageFileName = request.file.filename;
+    } catch {
+      return response.json();
+    }
+
     const diskStorage = new DiskStorage();
 
     const product = await knex('products').where({ id: productId }).first();
